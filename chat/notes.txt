@@ -1,0 +1,13 @@
+Server actions:
+
+1. accepts client
+2. sends 101 code, asks nickname
+3. buffer required to message length
+4. receives message
+
+
+Client actions:
+1. connects to server
+2. recv a 101 code and sends nickname
+3. send buffer and then a message
+4. if server sends in a message recv and print it

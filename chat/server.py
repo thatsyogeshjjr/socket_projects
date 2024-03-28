@@ -1,7 +1,11 @@
 import socket
 import threading
-import keyboard
-import sys
+
+'''
+Defined codes:
+101: Connection success. Send nickname
+
+'''
 
 HEADER = 64
 PORT = 5050
@@ -9,49 +13,55 @@ FORMAT = 'utf-8'
 DISCONNECT_MSG = 'CLIENT_DISCONNECT'
 SERVER = socket.gethostname()
 
+clients, nicknames = [], []
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((SERVER, PORT))
 
 
-def handle_client(conn, addr):
-    print(f'[+] {addr} is now connected.')
-    connected = True
-
-    while connected:
-
-        # blocking line of code:
-        # we won't move forward till smt is received.
-        # Hence threading is used
-
-        # How to know the length of msg
-        # we use headers
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-
-            msg = conn.recv(msg_length).decode(FORMAT)
-            if msg == 'CLIENT_DISCONNECT':
-                connected = False
-            print(f'{addr}:\t{msg}')
+def broadcast(message: str):
+    buff_length = len(message)
+    for client in clients:
+        client.send(str(buff_length).encode(FORMAT))
+        client.send(message.encode(FORMAT))
 
 
-def kill_server(event):
+def handle_clients(client: socket):
+    while True:
+        try:
+            buff_length = client.recv(HEADER).decode(FORMAT)
+            if buff_length:
+                buff_length = int(buff_length)
+                print(f'[TEST] Received blen: {buff_length}')
+                msg = client.recv(buff_length).decode(FORMAT)
+                if msg == DISCONNECT_MSG:
+                    raise Exception
+                broadcast(msg)
 
-    if event.name == 'esc':
-        server.close()
-        quit()
-        sys.exit(0)
+        except:
+
+            index = clients.index(client)
+            clients.remove(client)
+            client.close()
+            nickname = nicknames[index]
+            broadcast(f'{nickname} left the chat.')
+            nicknames.remove(nickname)
 
 
 def start_server():
     server.listen()
     while True:
+        client, address = server.accept()
+        client.send('c101'.encode(FORMAT))
 
-        keyboard.on_press(kill_server)
+        nickname = client.recv(1024).decode(FORMAT)
+        nicknames.append(nickname)
+        clients.append(client)
+        print(f'{str(address)} is now connected!')
+        broadcast(f'{nickname} joined the chat.')
 
-        (client, addr) = server.accept()
-        threading.Thread(target=handle_client, args=(client, addr)).start()
-        print(f'[!]\Active members: {threading.active_count()-1}')
+        client_thread = threading.Thread(target=handle_clients, args=(client,))
+        client_thread.start()
 
 
 start_server()

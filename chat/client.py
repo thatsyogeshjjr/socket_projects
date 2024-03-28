@@ -1,4 +1,5 @@
 import socket
+import threading
 
 
 HEADER = 64
@@ -7,34 +8,31 @@ FORMAT = 'utf-8'
 DISCONNECT_MSG = 'CLIENT_DISCONNECT'
 SERVER = socket.gethostname()
 
+nickname = input('Nickname: ')
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((SERVER, PORT))
 
 
-def send(message):
-    message = message.encode(FORMAT)
-    msg_length = len(message)
-    send_length = str(msg_length).encode(FORMAT)
+def handle_recv():
+    while True:
+        buffer = client.recv(HEADER).decode(FORMAT)
+        print(f"[FOR DEV] buffer_values: {buffer}")
+        if buffer:
+            if buffer == 'c101':
+                client.send(nickname.encode(FORMAT))
+            else:
+                len_msg = int(buffer)
+                msg = client.recv(len_msg).decode(FORMAT)
+                print(msg)
 
-    # add padding to make the header fit in 64 bytes
-    send_length += b' '*(HEADER - len(send_length))
-    client.send(send_length)
-    client.send(message)
+
+def writer():
+    while True:
+        message = f"{nickname}: {input('Message: ')}"
+        client.send(str(len(message)).encode(FORMAT))
+        client.send(message.encode(FORMAT))
 
 
-print('''
-=====================================
-=          The Chatter              =
-=====================================
-      
-write quit to exit
-      
-      ''')
-while True:
-    msg = input('Message: ')
-    if msg == 'quit':
-        send(DISCONNECT_MSG)
-        break
-    elif msg != '':
-        send(msg)
+threading.Thread(target=handle_recv).start()
+threading.Thread(target=writer).start()
