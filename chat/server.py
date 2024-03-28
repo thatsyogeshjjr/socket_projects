@@ -3,7 +3,7 @@ import threading
 
 '''
 Defined codes:
-101: Connection success. Send nickname
+c101: Connection success. Send nickname
 
 '''
 
@@ -32,7 +32,7 @@ def handle_clients(client: socket):
             buff_length = client.recv(HEADER).decode(FORMAT)
             if buff_length:
                 buff_length = int(buff_length)
-                print(f'[TEST] Received blen: {buff_length}')
+
                 msg = client.recv(buff_length).decode(FORMAT)
                 if msg == DISCONNECT_MSG:
                     raise Exception

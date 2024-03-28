@@ -1,5 +1,6 @@
 import socket
 import threading
+import getpass
 
 
 HEADER = 64
@@ -17,7 +18,7 @@ client.connect((SERVER, PORT))
 def handle_recv():
     while True:
         buffer = client.recv(HEADER).decode(FORMAT)
-        print(f"[FOR DEV] buffer_values: {buffer}")
+
         if buffer:
             if buffer == 'c101':
                 client.send(nickname.encode(FORMAT))
@@ -29,7 +30,10 @@ def handle_recv():
 
 def writer():
     while True:
-        message = f"{nickname}: {input('Message: ')}"
+        #! problem: when input('Message') is used we get that on ther local server
+        msg_typed = input('')  # get user input
+        print("\033[A                             \033[A")
+        message = f"{nickname}: {msg_typed}"
         client.send(str(len(message)).encode(FORMAT))
         client.send(message.encode(FORMAT))
 
