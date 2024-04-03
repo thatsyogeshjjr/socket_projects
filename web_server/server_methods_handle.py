@@ -8,7 +8,7 @@ TODO:
 
 '''
 
-SERVER = 'localhost'
+SERVER = '49.47.68.159'
 PORT = 5998
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
