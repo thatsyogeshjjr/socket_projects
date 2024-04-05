@@ -1,0 +1,6 @@
+Operation Started: 2024-04-05 23:25:24.289282
+135 [OPEN]
+139 [OPEN]
+445 [OPEN]
+Operation Ended: 2024-04-05 23:25:24.491129
+Time taken	0.20184659957885742
